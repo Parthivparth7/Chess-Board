@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from genomics_ai_system.services.pipeline_service import (
@@ -40,6 +41,18 @@ async def analyze_fastq(file: UploadFile = File(...)) -> dict:
     except Exception as exc:
         logger.exception("Unhandled pipeline error")
         raise HTTPException(status_code=500, detail="FASTQ analysis failed") from exc
+
+
+@router.post("/analyze-fastq-stream")
+async def analyze_fastq_stream(file: UploadFile = File(...)) -> StreamingResponse:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="File is required.")
+
+    allowed_suffixes = (".fastq", ".fq", ".fastq.gz", ".fq.gz")
+    if not file.filename.endswith(allowed_suffixes):
+        raise HTTPException(status_code=400, detail="Unsupported file type. Upload a FASTQ file.")
+
+    return StreamingResponse(service.analyze_fastq_stream(file), media_type="application/x-ndjson")
 
 
 @router.post("/analyze-fastq-url")

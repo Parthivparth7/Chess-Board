@@ -27,6 +27,12 @@ Uploads a local FASTQ file and executes the pipeline stages sequentially:
 7. Return response JSON
 
 
+### `POST /analyze-fastq-stream`
+
+Streams stage-by-stage analysis output as `application/x-ndjson` (newline-delimited JSON).
+
+Each line contains an event such as `start`, `stage_complete`, `complete`, or `error`.
+
 ### `POST /analyze-fastq-url`
 
 Fetches a FASTQ file from a direct HTTP/HTTPS URL (public source), then runs the same pipeline.
@@ -105,6 +111,16 @@ curl -X POST "http://127.0.0.1:8000/analyze-fastq-ena" \
   -d '{"run_accession":"SRR390728"}'
 ```
 
+
+### 4) Streaming analysis from uploaded FASTQ
+
+```bash
+curl -N -X POST "http://127.0.0.1:8000/analyze-fastq-stream" \
+  -H "accept: application/x-ndjson" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@sample_data/demo_reads.fastq"
+```
+
 ## Code structure
 
 ```text
@@ -146,3 +162,19 @@ This repository now includes default implementations for:
 So your API can return analysis JSON immediately, even before plugging in advanced external modules.
 
 To test quickly, send any small FASTQ file to `/analyze-fastq` or use ENA accession endpoint `/analyze-fastq-ena`.
+
+
+## Sample FASTQ file for testing
+
+Use this included file for quick validation:
+
+- `sample_data/demo_reads.fastq`
+
+Example upload:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@sample_data/demo_reads.fastq"
+```

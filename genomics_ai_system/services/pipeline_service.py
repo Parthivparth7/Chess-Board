@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import importlib
+import json
 import logging
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, AsyncIterator, Callable
 
 import httpx
 from fastapi import UploadFile
@@ -35,6 +36,75 @@ class GenomicsPipelineService:
 
         logger.info("Uploaded FASTQ saved: %s", tmp_path)
         return self._run_pipeline_for_path(tmp_path)
+
+    async def analyze_fastq_stream(self, fastq_file: UploadFile) -> AsyncIterator[str]:
+        suffix = Path(fastq_file.filename or "input.fastq").suffix or ".fastq"
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(await fastq_file.read())
+            tmp_path = Path(tmp.name)
+
+        logger.info("Uploaded FASTQ saved for streaming: %s", tmp_path)
+
+        yield self._to_ndjson({"event": "start", "message": "FASTQ upload received", "fastq_path": str(tmp_path)})
+
+        try:
+            preprocessed, t1 = self._run_timed_stage_with_elapsed("preprocessing", tmp_path)
+            yield self._to_ndjson({"event": "stage_complete", "stage": "preprocessing", "elapsed_sec": round(t1, 4)})
+
+            qc_metrics, t2 = self._run_timed_stage_with_elapsed("qc_analysis", preprocessed)
+            yield self._to_ndjson(
+                {
+                    "event": "stage_complete",
+                    "stage": "qc_analysis",
+                    "elapsed_sec": round(t2, 4),
+                    "qc_metrics": qc_metrics,
+                }
+            )
+
+            model_results, t3 = self._run_timed_stage_with_elapsed("model_analytics", qc_metrics)
+            yield self._to_ndjson(
+                {
+                    "event": "stage_complete",
+                    "stage": "model_analytics",
+                    "elapsed_sec": round(t3, 4),
+                    "model_results": model_results,
+                }
+            )
+
+            analysis_summary, t4 = self._run_timed_stage_with_elapsed("analysis_report", model_results)
+            yield self._to_ndjson(
+                {
+                    "event": "stage_complete",
+                    "stage": "analysis_report",
+                    "elapsed_sec": round(t4, 4),
+                    "analysis_summary": str(analysis_summary),
+                }
+            )
+
+            chatbot_response, t5 = self._run_timed_stage_with_elapsed("chatbot_interface", analysis_summary)
+            final_payload = {
+                "qc_metrics": qc_metrics if isinstance(qc_metrics, dict) else {"value": qc_metrics},
+                "model_results": model_results if isinstance(model_results, dict) else {"value": model_results},
+                "analysis_summary": str(analysis_summary),
+                "chatbot_response": str(chatbot_response),
+            }
+            yield self._to_ndjson(
+                {
+                    "event": "stage_complete",
+                    "stage": "chatbot_interface",
+                    "elapsed_sec": round(t5, 4),
+                    "chatbot_response": str(chatbot_response),
+                }
+            )
+            yield self._to_ndjson({"event": "complete", "result": final_payload})
+        except Exception as exc:
+            logger.exception("Streaming pipeline failed")
+            yield self._to_ndjson({"event": "error", "error": str(exc)})
+        finally:
+            try:
+                tmp_path.unlink(missing_ok=True)
+            except OSError:
+                logger.warning("Failed to delete temp file: %s", tmp_path)
 
     async def analyze_fastq_from_url(self, fastq_url: str, filename: str | None = None) -> dict[str, Any]:
         output_name = filename or Path(fastq_url).name or "downloaded.fastq.gz"
@@ -80,10 +150,8 @@ class GenomicsPipelineService:
         if not fastq_candidates:
             raise DataSourceError(f"No usable FASTQ links parsed for ENA accession: {run_accession}")
 
-        # Prefer the first FASTQ when multiple files are available.
         first_link = fastq_candidates[0]
         if first_link.startswith("ftp://"):
-            # convert ftp host path to https mirror path where possible
             first_link = "https://" + first_link[len("ftp://") :]
         elif not first_link.startswith("http://") and not first_link.startswith("https://"):
             first_link = f"https://{first_link}"
@@ -117,6 +185,17 @@ class GenomicsPipelineService:
         elapsed = time.perf_counter() - start
         logger.info("Stage '%s' completed in %.4fs", stage, elapsed)
         return result
+
+    def _run_timed_stage_with_elapsed(self, stage: str, payload: Any) -> tuple[Any, float]:
+        fn = self._resolve_stage_callable(stage)
+        start = time.perf_counter()
+        result = fn(payload)
+        elapsed = time.perf_counter() - start
+        logger.info("Stage '%s' completed in %.4fs", stage, elapsed)
+        return result, elapsed
+
+    def _to_ndjson(self, payload: dict[str, Any]) -> str:
+        return json.dumps(payload, default=str) + "\n"
 
     def _resolve_stage_callable(self, stage: str) -> Callable[..., Any]:
         if stage in self._stage_cache:

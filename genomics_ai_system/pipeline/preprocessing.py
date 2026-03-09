@@ -33,6 +33,7 @@ def run_qc_analysis(preprocessed_output: dict[str, Any]) -> dict[str, Any]:
     gc_bases = 0
     q20_bases = 0
     q30_bases = 0
+    quality_bases = 0
     min_len: int | None = None
     max_len = 0
 
@@ -59,7 +60,8 @@ def run_qc_analysis(preprocessed_output: dict[str, Any]) -> dict[str, Any]:
             seq_u = seq.upper()
             gc_bases += seq_u.count("G") + seq_u.count("C")
 
-            for ch in qual:
+            for ch in qual[:read_len]:
+                quality_bases += 1
                 score = ord(ch) - 33
                 if score >= 20:
                     q20_bases += 1
@@ -81,8 +83,9 @@ def run_qc_analysis(preprocessed_output: dict[str, Any]) -> dict[str, Any]:
 
     avg_len = total_bases / total_reads
     gc_percent = (gc_bases / total_bases) * 100
-    q20_percent = (q20_bases / total_bases) * 100
-    q30_percent = (q30_bases / total_bases) * 100
+    quality_den = quality_bases if quality_bases > 0 else total_bases
+    q20_percent = (q20_bases / quality_den) * 100
+    q30_percent = (q30_bases / quality_den) * 100
 
     qc_flag = "pass" if q30_percent >= 70 and total_reads >= 100 else "warn"
 
