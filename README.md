@@ -11,3 +11,9 @@ python3 -m http.server 8000
 ```
 
 Then visit `http://localhost:8000`.
+
+## FASTQ RAG Analytics Extension
+
+A blueprint for evolving this project toward a genomics assistant (FASTQ understanding + RAG + analytics reporting) is available in:
+
+- `FASTQ_RAG_ANALYTICS_PLAN.md`
