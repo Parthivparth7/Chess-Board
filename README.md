@@ -1,11 +1,11 @@
-# Genomics AI System
+# DNA Sequence Analysis AI System
 
 
 ## Repository Identity
 
-- **Project name:** Genomics AI FASTQ Analytics Backend
+- **Project name:** DNA Sequence Analysis AI Backend
 - **Repository description:** FastAPI genomics backend for FASTQ QC, analytics, streaming responses, and chatbot-ready reports.
-- **Suggested repo slug:** `genomics-ai-fastq-analytics-backend`
+- **Suggested repo slug:** `dna-sequence-analysis-ai-backend`
 
 A FastAPI backend for **genetic data science workflows** that orchestrates FASTQ processing and analytics pipelines, then returns structured outputs suitable for reporting and chatbot delivery.
 
@@ -190,3 +190,12 @@ curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
 ## Repository cleanup
 
 Legacy UI files unrelated to genomics were removed to keep this repository strictly focused on FASTQ analysis services.
+
+
+## GitHub rename note
+
+If your GitHub repository is still named `Chess-Board`, rename it in GitHub settings to:
+
+- `dna-sequence-analysis-ai-backend`
+
+Then update your remote URL locally if needed.

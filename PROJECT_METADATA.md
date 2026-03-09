@@ -1,7 +1,7 @@
 # Repository Metadata
 
 ## Project Name
-Genomics AI FASTQ Analytics Backend
+DNA Sequence Analysis AI Backend
 
 ## Short Description
 Production-oriented FastAPI backend for FASTQ ingestion, QC analytics, model scoring, report generation, and chatbot-ready responses, including streaming stage updates and public-source FASTQ ingestion (URL/ENA).
@@ -20,6 +20,6 @@ Bioinformatics / Genetic Data Science
   - `chatbot_response`
 
 ## Suggested GitHub Repository Settings
-- Repository name: `genomics-ai-fastq-analytics-backend`
-- Description: `FastAPI genomics backend for FASTQ QC, analytics, streaming responses, and chatbot-ready reports.`
+- Repository name: `dna-sequence-analysis-ai-backend`
+- Description: `FastAPI DNA sequence analysis backend for FASTQ QC, analytics, streaming responses, and chatbot-ready reports.`
 - Topics: `bioinformatics`, `genomics`, `fastq`, `fastapi`, `rag`, `ml`, `data-science`
