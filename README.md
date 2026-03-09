@@ -178,3 +178,8 @@ curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@sample_data/demo_reads.fastq"
 ```
+
+
+## Repository cleanup
+
+Legacy UI files unrelated to genomics were removed to keep this repository strictly focused on FASTQ analysis services.
