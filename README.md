@@ -1,52 +1,32 @@
-# ML Chess Arena
+# Genomics AI System
 
-A responsive, good-looking browser chess game where you play White against a black AI opponent that uses a lightweight machine-learned style evaluation plus minimax with alpha-beta pruning.
+A FastAPI backend for **genetic data science workflows** that orchestrates FASTQ processing and analytics pipelines, then returns structured outputs suitable for reporting and chatbot delivery.
 
-## Run
+## Project Focus
 
-Open `index.html` directly in your browser, or serve with a static server:
+This repository is now documented as a **pure genomics project**:
 
-```bash
-python3 -m http.server 8000
-```
+- FASTQ upload and orchestration
+- Preprocessing and QC stage execution
+- Model analytics stage execution
+- Analysis report generation
+- Chatbot response delivery
 
-Then visit `http://localhost:8000`.
+## API
 
-## FASTQ RAG Analytics Extension
+### `POST /analyze-fastq`
 
-A blueprint for evolving this project toward a genomics assistant (FASTQ understanding + RAG + analytics reporting) is available in:
+Uploads a FASTQ file and executes the pipeline stages sequentially:
 
-- `FASTQ_RAG_ANALYTICS_PLAN.md`
+1. Upload FASTQ file
+2. Run preprocessing
+3. Run QC analysis
+4. Run model analytics
+5. Generate analysis report
+6. Send report to chatbot interface
+7. Return response JSON
 
-
-## Genomics FastAPI Backend
-
-A FastAPI orchestration backend is available under `genomics_ai_system/` with endpoint:
-
-- `POST /analyze-fastq`
-
-### Install
-
-```bash
-pip install -r requirements.txt
-```
-
-### Run
-
-```bash
-uvicorn genomics_ai_system.app:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### Example cURL request
-
-```bash
-curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/sample.fastq.gz"
-```
-
-Expected response schema:
+### Response format
 
 ```json
 {
@@ -56,3 +36,51 @@ Expected response schema:
   "chatbot_response": ""
 }
 ```
+
+## Install
+
+```bash
+pip install -r requirements.txt
+```
+
+## Run
+
+```bash
+uvicorn genomics_ai_system.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+## Example cURL request
+
+```bash
+curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/path/to/sample.fastq.gz"
+```
+
+## Code structure
+
+```text
+genomics_ai_system/
+  app.py
+  pipeline/
+    preprocessing.py
+    model_building.py
+    report_generation.py
+    analysis_report.py
+  rag/
+    vector_store.py
+    retriever.py
+  chatbot/
+    chatbot_engine.py
+    chatbot_interface.py
+  routers/
+    api_router.py
+  services/
+    pipeline_service.py
+```
+
+## Notes
+
+- Existing domain modules are orchestrated without modifying their internal logic.
+- Stage execution time is logged for each pipeline step.
