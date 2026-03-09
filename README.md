@@ -131,3 +131,18 @@ genomics_ai_system/
 
 - Existing domain modules are orchestrated without modifying their internal logic.
 - Stage execution time is logged for each pipeline step.
+
+
+## Built-in default analytics (works immediately)
+
+This repository now includes default implementations for:
+
+- `run_preprocessing`
+- `run_qc_analysis`
+- `run_model_analytics`
+- `generate_analysis_report`
+- `send_to_chatbot`
+
+So your API can return analysis JSON immediately, even before plugging in advanced external modules.
+
+To test quickly, send any small FASTQ file to `/analyze-fastq` or use ENA accession endpoint `/analyze-fastq-ena`.

@@ -1,5 +1,5 @@
-"""External chatbot engine placeholder.
+from __future__ import annotations
 
-Provide existing chatbot orchestration function externally, e.g.:
-- generate_response(analysis_summary)
-"""
+
+def generate_response(analysis_summary: str) -> str:
+    return f"Chatbot generated summary: {analysis_summary}"
