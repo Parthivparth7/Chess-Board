@@ -1,201 +1,132 @@
 # DNA Sequence Analysis AI System
 
+Production-ready **Agentic Genomic AI Platform** for FASTQ ingestion, QC, feature extraction, ML prediction, RAG retrieval, report generation, and chatbot explanation.
 
-## Repository Identity
+## Project Name
+**DNA Sequence Analysis AI Backend**
 
-- **Project name:** DNA Sequence Analysis AI Backend
-- **Repository description:** FastAPI genomics backend for FASTQ QC, analytics, streaming responses, and chatbot-ready reports.
-- **Suggested repo slug:** `dna-sequence-analysis-ai-backend`
-
-A FastAPI backend for **genetic data science workflows** that orchestrates FASTQ processing and analytics pipelines, then returns structured outputs suitable for reporting and chatbot delivery.
-
-## Project Focus
-
-This repository is now documented as a **pure genomics project**:
-
-- FASTQ upload and orchestration
-- Preprocessing and QC stage execution
-- Model analytics stage execution
+## Key Capabilities
+- FASTQ genomic data ingestion
+- Sequence preprocessing and quality control
+- Feature extraction (k-mer + nucleotide distribution)
+- ML prediction and risk scoring
 - Analysis report generation
-- Chatbot response delivery
+- RAG retrieval over genomic knowledge base
+- Multi-agent chatbot explanation
+- FastAPI endpoints for analysis and chat
 
-## API
+## Agentic Pipeline
+Data Agent → QC Agent → Feature Agent → ML Agent → Report Agent → Knowledge Retrieval Agent → Chatbot Agent
 
-### `POST /analyze-fastq`
+## New Modular Architecture
 
-Uploads a local FASTQ file and executes the pipeline stages sequentially:
-
-1. Upload FASTQ file
-2. Run preprocessing
-3. Run QC analysis
-4. Run model analytics
-5. Generate analysis report
-6. Send report to chatbot interface
-7. Return response JSON
-
-
-### `POST /analyze-fastq-stream`
-
-Streams stage-by-stage analysis output as `application/x-ndjson` (newline-delimited JSON).
-
-Each line contains an event such as `start`, `stage_complete`, `complete`, or `error`.
-
-### `POST /analyze-fastq-url`
-
-Fetches a FASTQ file from a direct HTTP/HTTPS URL (public source), then runs the same pipeline.
-
-Request body:
-
-```json
-{
-  "fastq_url": "https://.../sample.fastq.gz",
-  "filename": "sample.fastq.gz"
-}
+```text
+agentic_genomic_ai/
+  app/
+    main.py
+  routers/
+    genomics_router.py
+    chat_router.py
+  agents/
+    data_ingestion_agent.py
+    qc_agent.py
+    feature_extraction_agent.py
+    ml_prediction_agent.py
+    report_generation_agent.py
+    rag_retrieval_agent.py
+    chatbot_agent.py
+  pipeline/
+    pipeline_orchestrator.py
+  rag/
+    vector_store.py
+    document_loader.py
+    retriever.py
+  schemas/
+    request_schema.py
+    response_schema.py
+  utils/
+    fastq_parser.py
+    sequence_utils.py
+    logging_utils.py
+  data/
+    knowledge_base/
+  models/
+    trained_models/
+  reports/
+app/
+  main.py
 ```
 
-### `POST /analyze-fastq-ena`
-
-Fetches a real FASTQ dataset from the **ENA authentic public database** using run accession metadata, then runs the same pipeline.
-
-Request body:
-
-```json
-{
-  "run_accession": "SRR390728"
-}
-```
-
-### Response format
-
-```json
-{
-  "qc_metrics": {},
-  "model_results": {},
-  "analysis_summary": "",
-  "chatbot_response": ""
-}
-```
+## Backward Compatibility
+Existing `genomics_ai_system/` modules are preserved. The new platform is added alongside previous code and can coexist.
 
 ## Install
-
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run
-
+## Run (required)
 ```bash
-uvicorn genomics_ai_system.app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --reload
 ```
 
+## API Endpoints
 
-## Example cURL requests
+### 1) FASTQ analysis
+`POST /genomics/analyze_fastq`
 
-### 1) Upload local FASTQ
-
-```bash
-curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/sample.fastq.gz"
+Response example:
+```json
+{
+  "qc_metrics": {},
+  "model_prediction": {},
+  "analysis_summary": "",
+  "chatbot_explanation": ""
+}
 ```
 
-### 2) Analyze by direct FASTQ URL
+### 2) Chat over genomic results
+`POST /chat/genomics`
 
-```bash
-curl -X POST "http://127.0.0.1:8000/analyze-fastq-url" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d '{"fastq_url":"https://example.org/sample.fastq.gz"}'
+Request:
+```json
+{
+  "question": "Explain mutation risk",
+  "analysis_summary": "Optional summary"
+}
 ```
 
-### 3) Analyze from ENA run accession (authentic database)
-
-```bash
-curl -X POST "http://127.0.0.1:8000/analyze-fastq-ena" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d '{"run_accession":"SRR390728"}'
+Response:
+```json
+{
+  "answer": "AI generated explanation with literature support"
+}
 ```
 
+## Example Commands
 
-### 4) Streaming analysis from uploaded FASTQ
-
+### Analyze FASTQ
 ```bash
-curl -N -X POST "http://127.0.0.1:8000/analyze-fastq-stream" \
-  -H "accept: application/x-ndjson" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@sample_data/demo_reads.fastq"
-```
-
-## Code structure
-
-```text
-genomics_ai_system/
-  app.py
-  pipeline/
-    preprocessing.py
-    model_building.py
-    report_generation.py
-    analysis_report.py
-  rag/
-    vector_store.py
-    retriever.py
-  chatbot/
-    chatbot_engine.py
-    chatbot_interface.py
-  routers/
-    api_router.py
-  services/
-    pipeline_service.py
-```
-
-## Notes
-
-- Existing domain modules are orchestrated without modifying their internal logic.
-- Stage execution time is logged for each pipeline step.
-
-
-## Built-in default analytics (works immediately)
-
-This repository now includes default implementations for:
-
-- `run_preprocessing`
-- `run_qc_analysis`
-- `run_model_analytics`
-- `generate_analysis_report`
-- `send_to_chatbot`
-
-So your API can return analysis JSON immediately, even before plugging in advanced external modules.
-
-To test quickly, send any small FASTQ file to `/analyze-fastq` or use ENA accession endpoint `/analyze-fastq-ena`.
-
-
-## Sample FASTQ file for testing
-
-Use this included file for quick validation:
-
-- `sample_data/demo_reads.fastq`
-
-Example upload:
-
-```bash
-curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
+curl -X POST "http://127.0.0.1:8000/genomics/analyze_fastq" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@sample_data/demo_reads.fastq"
 ```
 
+### Ask genomic chat question
+```bash
+curl -X POST "http://127.0.0.1:8000/chat/genomics" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"question":"Explain mutation risk"}'
+```
 
-## Repository cleanup
+## Local Pipeline Script
+```bash
+python scripts/run_local_pipeline.py
+```
 
-Legacy UI files unrelated to genomics were removed to keep this repository strictly focused on FASTQ analysis services.
-
-
-## GitHub rename note
-
-If your GitHub repository is still named `Chess-Board`, rename it in GitHub settings to:
-
-- `dna-sequence-analysis-ai-backend`
-
-Then update your remote URL locally if needed.
+## Testing
+```bash
+python -m pytest -q tests/test_pipeline_example.py
+```
