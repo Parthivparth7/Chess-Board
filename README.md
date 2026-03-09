@@ -16,7 +16,7 @@ This repository is now documented as a **pure genomics project**:
 
 ### `POST /analyze-fastq`
 
-Uploads a FASTQ file and executes the pipeline stages sequentially:
+Uploads a local FASTQ file and executes the pipeline stages sequentially:
 
 1. Upload FASTQ file
 2. Run preprocessing
@@ -25,6 +25,32 @@ Uploads a FASTQ file and executes the pipeline stages sequentially:
 5. Generate analysis report
 6. Send report to chatbot interface
 7. Return response JSON
+
+
+### `POST /analyze-fastq-url`
+
+Fetches a FASTQ file from a direct HTTP/HTTPS URL (public source), then runs the same pipeline.
+
+Request body:
+
+```json
+{
+  "fastq_url": "https://.../sample.fastq.gz",
+  "filename": "sample.fastq.gz"
+}
+```
+
+### `POST /analyze-fastq-ena`
+
+Fetches a real FASTQ dataset from the **ENA authentic public database** using run accession metadata, then runs the same pipeline.
+
+Request body:
+
+```json
+{
+  "run_accession": "SRR390728"
+}
+```
 
 ### Response format
 
@@ -49,13 +75,34 @@ pip install -r requirements.txt
 uvicorn genomics_ai_system.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Example cURL request
+
+## Example cURL requests
+
+### 1) Upload local FASTQ
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/analyze-fastq" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@/path/to/sample.fastq.gz"
+```
+
+### 2) Analyze by direct FASTQ URL
+
+```bash
+curl -X POST "http://127.0.0.1:8000/analyze-fastq-url" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"fastq_url":"https://example.org/sample.fastq.gz"}'
+```
+
+### 3) Analyze from ENA run accession (authentic database)
+
+```bash
+curl -X POST "http://127.0.0.1:8000/analyze-fastq-ena" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"run_accession":"SRR390728"}'
 ```
 
 ## Code structure
